@@ -87,7 +87,7 @@
           "background": "#104b86",
           "template": "  {{ .CurrentDate | date \"03:04:05\" }}  ",
           "properties": {
-            "format": "15:04:05"
+            "format": "03:04:05"
           }
         }
       ]
