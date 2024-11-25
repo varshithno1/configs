@@ -75,12 +75,3 @@ if (-not $modulesInstalled) {
     exit
 }
 
-# If all modules and executables are installed, run the main script
-$mainScriptPath = "$env:USERPROFILE\Documents\configs\powershell\scripts\main.ps1"
-if ($modulesInstalled -and (Test-Path $mainScriptPath) -and $mainScriptPath.EndsWith(".ps1")) {
-    Write-Output "Running main script..."
-    . $mainScriptPath
-} else {
-    Write-Output "Failed to load main script."
-}
-

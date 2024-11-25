@@ -1,11 +1,9 @@
-# clear
+clear
 
-# Activating omp
-oh-my-posh init pwsh | Invoke-Expression
 
 # Paths for local and global omp themes
 $configPathL = "$env:USERPROFILE\Documents\configs\powershell\omp\varshith.omp.json"
-$configPathG = "https://raw.githubusercontent.com/varshithno1/configs/master/powershell/omp/varshith.omp.json"
+$ompTheme = (Get-ItemProperty -Path "HKCU:\Environment").ompTheme
 # $configPathG = "D:/Temp/test.omp.json"
 
 try {
@@ -17,8 +15,9 @@ catch {
 
 if($connectionTest) {
     # If there is an internet connection, load the internet config
-    oh-my-posh init pwsh --config $configPathG | Invoke-Expression
-    Write-Host "Loaded Global Path - configPathG"
+    oh-my-posh init pwsh --config (Get-ItemProperty -Path "HKCU:\Environment").ompTheme | Invoke-Expression
+    $test = (Get-ItemProperty -Path "HKCU:\Environment").ompTheme
+    Write-Host "Loaded Global Path - $test"
 } else {
     # If there is no internet connection, load the local config
     oh-my-posh init pwsh --config $configPathL | Invoke-Expression
@@ -123,7 +122,7 @@ function copyLine {
 # Defining a function for puling the latest configurations from the repo
 function UpdateLocalConfigs {
     if (-not $configPathL) {
-        Write-Error "Error: \$configPathL is not defined or empty."
+        Write-Error "Error: $configPathL is not defined or empty."
         return
     }
 
@@ -155,8 +154,31 @@ function setGitConfig {
     git config user.name $Name
 }
 
+# function for checking pakages
+function checkWrapper {
+    . "$env:USERPROFILE\Documents\configs\powershell\scripts\checkWrapper.ps1"
+}
+
+# Defining a function that sets the theme
+function setTheme {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$theme
+    )
+    
+    [System.Environment]::SetEnvironmentVariable("ompTheme", "$theme", "User")
+
+    
+    . $PROFILE
+}
+
+$test = "https://raw.githubusercontent.com/varshithno1/configs/master/powershell/omp/varshith.omp.json"
+
 # Creating an alias for the exit function
 Set-Alias e exitF
+
+# Creating an alias for the clear command
+Set-Alias c clear
 
 # Creating an alias for the path copy function
 Set-Alias pw pwdCopy
@@ -192,16 +214,11 @@ Set-Alias cl copyLine
 # Creating an alias for setting local git config
 Set-Alias gcl setGitConfig
 
+# Creating an alias for checking pakages
+Set-Alias womp checkWrapper
+
+# Creating an alias for setting theme
+Set-Alias somp setTheme
 
 # Shows the powershell version
 "" + $PSVersionTable.PSVersion.Major + "." + $PSVersionTable.PSVersion.Minor
-
-# Import the Chocolatey Profile that contains the necessary code to enable
-# tab-completions to function for `choco`.
-# Be aware that if you are missing these lines from your profile, tab completion
-# for `choco` will not function.
-# See https://ch0.co/tab-completion for details.
-$ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-if (Test-Path($ChocolateyProfile)) {
-  Import-Module "$ChocolateyProfile"
-}
