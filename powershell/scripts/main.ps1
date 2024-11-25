@@ -227,7 +227,7 @@ Set-Alias womp checkWrapper
 Set-Alias sompg setThemeG
 
 # Creating an alias for setting local theme
-Set-Alias sompg setThemeL
+Set-Alias sompl setThemeL
 
 # Shows the powershell version
 "" + $PSVersionTable.PSVersion.Major + "." + $PSVersionTable.PSVersion.Minor
