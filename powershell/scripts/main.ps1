@@ -1,4 +1,4 @@
-clear
+# clear
 
 # Activating omp
 oh-my-posh init pwsh | Invoke-Expression
