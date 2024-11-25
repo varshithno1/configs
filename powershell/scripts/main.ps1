@@ -114,13 +114,9 @@ function copyLine {
 
 # Defining a function for puling the latest configurations from the repo
 function UpdateLocalConfigs {
-    if (-not $configPathL) {
-        Write-Error "Error: $configPathL is not defined or empty."
-        return
-    }
 
     # Get the repository path
-    $repoPath = Split-Path -Path $configPathL -Parent
+    $repoPath = (Get-ItemProperty -Path "HKCU:\Environment").configLoc
 
     if (-not (Test-Path $repoPath)) {
         Write-Error "Error: The derived repository path `$repoPath` does not exist."
