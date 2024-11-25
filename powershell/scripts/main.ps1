@@ -1,11 +1,5 @@
 clear
 
-
-# Paths for local and global omp themes
-$configPathL = "$env:USERPROFILE\Documents\configs\powershell\omp\varshith.omp.json"
-$ompTheme = (Get-ItemProperty -Path "HKCU:\Environment").ompTheme
-# $configPathG = "D:/Temp/test.omp.json"
-
 try {
     $connectionTest = Test-Connection -ComputerName 8.8.8.8 -Count 1 -Quiet -ErrorAction Stop
 }
@@ -15,13 +9,12 @@ catch {
 
 if($connectionTest) {
     # If there is an internet connection, load the internet config
-    oh-my-posh init pwsh --config (Get-ItemProperty -Path "HKCU:\Environment").ompTheme | Invoke-Expression
-    $test = (Get-ItemProperty -Path "HKCU:\Environment").ompTheme
-    Write-Host "Loaded Global Path - $test"
+    oh-my-posh init pwsh --config (Get-ItemProperty -Path "HKCU:\Environment").ompThemeG | Invoke-Expression
+    Write-Host "Loaded Global Path"
 } else {
     # If there is no internet connection, load the local config
-    oh-my-posh init pwsh --config $configPathL | Invoke-Expression
-    Write-Host "Loaded Local Path - configPathL"
+    oh-my-posh init pwsh --config (Get-ItemProperty -Path "HKCU:\Environment").ompThemeL | Invoke-Expression
+    Write-Host "Loaded Local Path"
 }
 
 
@@ -159,14 +152,27 @@ function checkWrapper {
     . "$env:USERPROFILE\Documents\configs\powershell\scripts\checkWrapper.ps1"
 }
 
-# Defining a function that sets the theme
-function setTheme {
+# Defining a function that sets the global theme
+function setThemeG {
     param (
         [Parameter(Mandatory = $true)]
         [string]$theme
     )
     
-    [System.Environment]::SetEnvironmentVariable("ompTheme", "$theme", "User")
+    [System.Environment]::SetEnvironmentVariable("ompThemeG", "$theme", "User")
+
+    
+    . $PROFILE
+}
+
+# Defining a function that sets the local theme
+function setThemeL {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$theme
+    )
+    
+    [System.Environment]::SetEnvironmentVariable("ompThemeL", "$theme", "User")
 
     
     . $PROFILE
@@ -217,8 +223,11 @@ Set-Alias gcl setGitConfig
 # Creating an alias for checking pakages
 Set-Alias womp checkWrapper
 
-# Creating an alias for setting theme
-Set-Alias somp setTheme
+# Creating an alias for setting global theme
+Set-Alias sompg setThemeG
+
+# Creating an alias for setting local theme
+Set-Alias sompg setThemeL
 
 # Shows the powershell version
 "" + $PSVersionTable.PSVersion.Major + "." + $PSVersionTable.PSVersion.Minor
