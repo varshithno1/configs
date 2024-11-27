@@ -1,5 +1,11 @@
 clear
 
+$configLoc = (Get-ItemProperty -Path "HKCU:\Environment").configLoc
+$main = $configLoc + "\powershell\scripts\main.ps1"
+
+$mainFileExists = Test-Path $main
+
+
 try {
     $connectionTest = Test-Connection -ComputerName 8.8.8.8 -Count 1 -Quiet -ErrorAction Stop
 }
@@ -10,11 +16,11 @@ catch {
 if($connectionTest) {
     # If there is an internet connection, load the internet config
     oh-my-posh init pwsh --config (Get-ItemProperty -Path "HKCU:\Environment").ompThemeG | Invoke-Expression
-    Write-Host "Loaded Global Path"
+    Write-Host "Loaded " -NoNewline; Write-Host " Global Path " -BackgroundColor Green -ForegroundColor Black
 } else {
     # If there is no internet connection, load the local config
     oh-my-posh init pwsh --config (Get-ItemProperty -Path "HKCU:\Environment").ompThemeL | Invoke-Expression
-    Write-Host "Loaded Local Path"
+    Write-Host "Loaded " -NoNewline; Write-Host " Local Path " -BackgroundColor Blue -ForegroundColor Black
 }
 
 
@@ -23,6 +29,14 @@ if($connectionTest) {
 Set-PSReadLineOption -PredictionSource History
 Set-PSReadLineOption -PredictionViewStyle ListView
 
+function ERROR {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$text
+    )
+
+    Write-Host " $text " -BackgroundColor red
+}
 
 # Defining a function for exiting the shell
 function exitF{
@@ -54,6 +68,49 @@ function restartTerminal {
 function openProfile {
     code $PROFILE
 }
+
+# Defining a function for opening main profile
+function openProfileMain {
+    if( -not ($mainFileExists))
+    {
+        ERROR "Location of config not correctly defined!!"
+        return
+    }
+    
+    code $main
+}
+
+# Defining a function for opening links on the desktop
+function startApplication {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$app,
+
+        [string]$link
+    )
+
+    $desktopPath = "$env:USERPROFILE\Desktop"
+    
+    if (-not (Test-Path $desktopPath)) {
+        ERROR "Desktop Location is invalid - $desktopPath"
+        return
+    }
+
+    $shortcut = Get-ChildItem -Path $desktopPath -Filter "$app.lnk" -ErrorAction SilentlyContinue
+
+    if (-not $shortcut) {
+        ERROR "Shortcut '$app.lnk' not found on the Desktop."
+        return
+    }
+
+    if ($PSCmdlet.MyInvocation.BoundParameters['link']) {
+        Start-Process $shortcut.FullName $link
+    } else {
+        Start-Process $shortcut.FullName
+    }
+}
+
+
 
 # Defining a function for small fzf
 function smallFZF {
@@ -145,7 +202,7 @@ function setGitConfig {
 
 # function for checking pakages
 function checkWrapper {
-    . "$env:USERPROFILE\Documents\configs\powershell\scripts\checkWrapper.ps1"
+    . (Get-ItemProperty -Path "HKCU:\Environment").ompThemeG + "powershell\scripts\checkWrapper.ps1"
 }
 
 # Defining a function that sets the global theme
@@ -199,10 +256,18 @@ Set-Alias z zoxide.exe
 
 # Creating an alias for restarting terminal
 Set-Alias rs restartTerminal
+
+# Creating an alias for zoxide
 Set-Alias z zoxide.exe
 
 # Creating an alias for opening profile
 Set-Alias op openProfile
+
+# Creating an alias for opening main profile
+Set-Alias opm openProfileMain
+
+# Creating an alias for opening links on the desktop
+Set-Alias s startApplication
 
 # Creating an alias for small fzf
 Set-Alias fsf smallFZF
@@ -226,4 +291,4 @@ Set-Alias sompg setThemeG
 Set-Alias sompl setThemeL
 
 # Shows the powershell version
-"" + $PSVersionTable.PSVersion.Major + "." + $PSVersionTable.PSVersion.Minor
+Write-Host ("v{0}{1}{2}" -f ($PSVersionTable.PSVersion.Major, ".", $PSVersionTable.PSVersion.Minor)) -ForegroundColor Green
