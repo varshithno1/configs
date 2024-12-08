@@ -231,8 +231,6 @@ function setThemeL {
     . $PROFILE
 }
 
-$test = "https://raw.githubusercontent.com/varshithno1/configs/master/powershell/omp/varshith.omp.json"
-
 # Creating an alias for the exit function
 Set-Alias e exitF
 
