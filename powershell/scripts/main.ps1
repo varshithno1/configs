@@ -110,7 +110,11 @@ function startApplication {
     }
 }
 
-
+# Defining a function for copying location after printing it
+function copyLocation {
+    Get-Location | Set-Clipboard
+    Get-Location
+}
 
 # Defining a function for small fzf
 function smallFZF {
@@ -231,6 +235,53 @@ function setThemeL {
     . $PROFILE
 }
 
+# Define the function to compile, run and delete C++ files
+function CompileRunDeleteCpp {
+    param (
+        [string]$cppFilePath
+    )
+
+    # Check if the provided C++ file exists
+    if (Test-Path $cppFilePath) {
+        try {
+            # Get the file name without extension
+            $fileName = [System.IO.Path]::GetFileNameWithoutExtension($cppFilePath)
+            
+            # Compile the C++ file using g++
+            $compileCommand = "g++ -o $fileName.exe $cppFilePath"
+            Write-Host "Compiling $cppFilePath..."
+            $compileResult = Invoke-Expression $compileCommand
+
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "Compilation successful."
+                
+                # Check if the executable exists
+                if (Test-Path ".\$fileName.exe") {
+                    Write-Host "Running the program...`n"
+                    
+                    clear
+
+                    # Run the compiled executable interactively in the same window
+                    # Use cmd.exe to run the program, which allows input to go to the interactive console
+                    cmd /c ".\$fileName.exe"
+
+                    # After the program finishes, remove the compiled executable
+                    Remove-Item ".\$fileName.exe"
+                    Write-Host "`n`nDeleted the compiled executable: $fileName.exe"
+                } else {
+                    Write-Host "Executable was not created."
+                }
+            } else {
+                Write-Host "Compilation failed with exit code: $LASTEXITCODE"
+            }
+        } catch {
+            Write-Host "An error occurred: $_"
+        }
+    } else {
+        Write-Host "File not found: $cppFilePath"
+    }
+}
+
 # Creating an alias for the exit function
 Set-Alias e exitF
 
@@ -267,6 +318,9 @@ Set-Alias opm openProfileMain
 # Creating an alias for opening links on the desktop
 Set-Alias s startApplication
 
+# Creating an alias for copying location
+Set-Alias pwc copyLocation
+
 # Creating an alias for small fzf
 Set-Alias fsf smallFZF
 
@@ -287,6 +341,9 @@ Set-Alias sompg setThemeG
 
 # Creating an alias for setting local theme
 Set-Alias sompl setThemeL
+
+# Creating an alias for running C++ files
+Set-Alias gpp CompileRunDeleteCpp
 
 # Shows the powershell version
 Write-Host ("v{0}{1}{2}" -f ($PSVersionTable.PSVersion.Major, ".", $PSVersionTable.PSVersion.Minor)) -ForegroundColor Green
